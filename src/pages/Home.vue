@@ -1,20 +1,27 @@
 <template>
   <div class="app">
-    <h1>Dashboard</h1>
+<!--    <h1>Dashboard</h1>-->
 
-    <Button label="Clique moi" class="p-button-primary" @click="onClick" />
+<!--    <Button label="Clique moi" class="p-button-primary" @click="onClick" />-->
 
-    <v-chart :option="chartOptions" style="height: 400px; width: 100%; margin-top: 2rem;" />
+<!--    <v-chart :option="chartOptions" style="height: 400px; width: 100%; margin-top: 2rem;" />-->
 
-    <router-link to="/" style="display: block; margin-top: 2rem;">Retour à l'accueil</router-link>
+<!--    <router-link to="/" style="display: block; margin-top: 2rem;">Retour à l'accueil</router-link>-->
+<!--    <Maps/>-->
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import Button from 'primevue/button'
+import {useUser} from "../composition/user/index.js";
+import Maps from "../components/Maps.vue";
+
+const { user } = useUser()
+
 
 const onClick = () => {
+  console.log('user ',user)
   alert('Bouton cliqué !')
 }
 
