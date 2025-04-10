@@ -18,10 +18,13 @@
       <Column field="album_name" header="Album Name" />
       <Column header="Action">
         <template #body="{ data }">
-          <button @click="() => handleActionClick(data)">Action</button>
+          <button @click="() => handleActionClick(data)">Détails</button>
         </template>
       </Column>
     </DataTable>
+
+    <TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible" />
+
   </div>
 </template>
 
@@ -31,7 +34,10 @@ import type {Track} from "./index.ts";       // Mettez le chemin correct vers vo
 import {fetchTracks} from "./index.ts";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import TrackDetailsPopup from "./TrackDetailsPopup.vue";
 const tracks = ref<Track[]>([]);
+const selectedTrack = ref<Track | null>(null);
+const popupVisible = ref(false);
 
 const columns = [
   { field: 'id', header: 'ID' },
@@ -102,9 +108,9 @@ function formatFrenchDate(dateString: string): string {
 
 // 🛎️ Action du bouton
 function handleActionClick(track: Track) {
-  alert(`Action sur : ${track.name}`);
+  selectedTrack.value = track;
+  popupVisible.value = true;
 }
-
 // onMounted(async () => {
 //   try {
 //     tracks.value = await fetchTracks();

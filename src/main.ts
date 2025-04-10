@@ -3,9 +3,13 @@ import App from './App.vue'
 import './style.css'
 
 // PrimeVue
-import 'primevue/resources/themes/saga-blue/theme.css'
-import 'primevue/resources/primevue.min.css'
-import 'primeicons/primeicons.css'
+// PrimeVue
+import 'primevue/resources/themes/saga-blue/theme.css'; // 👈 clair
+import 'primevue/resources/primevue.min.css';
+import 'primeicons/primeicons.css';
+import Dialog from 'primevue/dialog';
+import Button from 'primevue/button';
+
 
 import PrimeVue from 'primevue/config'
 
@@ -47,6 +51,8 @@ const app = createApp(App)
 
 // Ajout de PrimeVue
 app.use(PrimeVue)
+app.component('Dialog', Dialog);
+app.component('Button', Button);
 
 // Ajout du router
 const router = createRouter({
