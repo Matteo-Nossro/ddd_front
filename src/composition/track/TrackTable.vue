@@ -1,82 +1,71 @@
 <template>
-    <DataTable :value="tracks"     class="styled-table"
-               tableStyle="min-width: 60rem">
-      <Column field="name" header="Nom" />
-      <Column field="artists" header="Artiste" />
-      <Column field="popularity" header="Popularité" />
-      <Column header="Durée">
-        <template #body="{ data }">
-          {{ formatDuration(data.duration_ms) }}
-        </template>
-      </Column>
-      <Column field="album_release_date" header="Date de sortie">
-        <template #body="{ data }">
-          {{ formatFrenchDate(data.album_release_date) }}
-        </template>
-      </Column>
-      <Column field="album_name" header="Nom de l'album" />
-      <Column header="Action">
-        <template #body="{ data }">
-          <button @click="() => handleActionClick(data)">Détails</button>
-        </template>
-      </Column>
-    </DataTable>
+  <DataTable :value="tracks" class="styled-table"
+             tableStyle="min-width: 60rem">
+    <Column field="name" header="Nom"/>
+    <Column field="artists" header="Artiste"/>
+    <Column field="popularity" header="Popularité"/>
+    <Column header="Durée">
+      <template #body="{ data }">
+        {{ formatDuration(data.duration_ms) }}
+      </template>
+    </Column>
+    <Column field="album_release_date" header="Date de sortie">
+      <template #body="{ data }">
+        {{ formatFrenchDate(data.album_release_date) }}
+      </template>
+    </Column>
+    <Column field="album_name" header="Nom de l'album"/>
+    <Column header="Action">
+      <template #body="{ data }">
+        <button @click="() => handleActionClick(data)">Détails</button>
+      </template>
+    </Column>
+  </DataTable>
 
-    <TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible" />
+  <TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible"/>
 
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import type {Track} from "./index.ts";       // Mettez le chemin correct vers votre interface
 import {fetchTracks} from "./index.ts";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TrackDetailsPopup from "./TrackDetailsPopup.vue";
+
 const tracks = ref<Track[]>([]);
 const selectedTrack = ref<Track | null>(null);
 const popupVisible = ref(false);
 
 const columns = [
-  { field: 'id', header: 'ID' },
-  { field: 'country', header: 'Country' },
-  { field: 'spotify_id', header: 'Spotify ID' },
-  { field: 'name', header: 'Name' },
-  { field: 'artists', header: 'Artists' },
-  { field: 'daily_rank', header: 'Daily Rank' },
-  { field: 'daily_movement', header: 'Daily Movement' },
-  { field: 'weekly_movement', header: 'Weekly Movement' },
-  { field: 'snapshot_date', header: 'Snapshot Date' },
-  { field: 'popularity', header: 'Popularity' },
-  { field: 'is_explicit', header: 'Explicit' },
-  { field: 'duration_ms', header: 'Duration (ms)' },
-  { field: 'album_name', header: 'Album Name' },
-  { field: 'album_release_date', header: 'Album Release Date' },
-  { field: 'danceability', header: 'Danceability' },
-  { field: 'energy', header: 'Energy' },
-  { field: 'key', header: 'Key' },
-  { field: 'loudness', header: 'Loudness' },
-  { field: 'mode', header: 'Mode' },
-  { field: 'speechiness', header: 'Speechiness' },
-  { field: 'acousticness', header: 'Acousticness' },
-  { field: 'instrumentalness', header: 'Instrumentalness' },
-  { field: 'liveness', header: 'Liveness' },
-  { field: 'valence', header: 'Valence' },
-  { field: 'tempo', header: 'Tempo' },
-  { field: 'time_signature', header: 'Time Signature' }
+  {field: 'id', header: 'ID'},
+  {field: 'country', header: 'Country'},
+  {field: 'spotify_id', header: 'Spotify ID'},
+  {field: 'name', header: 'Name'},
+  {field: 'artists', header: 'Artists'},
+  {field: 'daily_rank', header: 'Daily Rank'},
+  {field: 'daily_movement', header: 'Daily Movement'},
+  {field: 'weekly_movement', header: 'Weekly Movement'},
+  {field: 'snapshot_date', header: 'Snapshot Date'},
+  {field: 'popularity', header: 'Popularity'},
+  {field: 'is_explicit', header: 'Explicit'},
+  {field: 'duration_ms', header: 'Duration (ms)'},
+  {field: 'album_name', header: 'Album Name'},
+  {field: 'album_release_date', header: 'Album Release Date'},
+  {field: 'danceability', header: 'Danceability'},
+  {field: 'energy', header: 'Energy'},
+  {field: 'key', header: 'Key'},
+  {field: 'loudness', header: 'Loudness'},
+  {field: 'mode', header: 'Mode'},
+  {field: 'speechiness', header: 'Speechiness'},
+  {field: 'acousticness', header: 'Acousticness'},
+  {field: 'instrumentalness', header: 'Instrumentalness'},
+  {field: 'liveness', header: 'Liveness'},
+  {field: 'valence', header: 'Valence'},
+  {field: 'tempo', header: 'Tempo'},
+  {field: 'time_signature', header: 'Time Signature'}
 ];
-
-onMounted(async () => {
-  try {
-    const response = await fetch('/moke_top_track.json');
-    if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-
-    const data = await response.json();
-    tracks.value = data.results; // ✅ on accède à `results` ici
-  } catch (error) {
-    console.error('Erreur lors du chargement des tracks :', error);
-  }
-});
 
 
 // 💡 Convertit la durée en mm:ss
@@ -109,13 +98,29 @@ function handleActionClick(track: Track) {
   selectedTrack.value = track;
   popupVisible.value = true;
 }
+
 // onMounted(async () => {
 //   try {
-//     tracks.value = await fetchTracks();
+//     const response = await fetch('/moke_top_track.json');
+//     if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+//
+//     const data = await response.json();
+//     tracks.value = data.results; // ✅ on accède à `results` ici
 //   } catch (error) {
-//     console.error("Erreur lors de la récupération des tracks :", error);
+//     console.error('Erreur lors du chargement des tracks :', error);
 //   }
 // });
+onMounted(async () => {
+  try {
+    const response = await fetchTracks();
+    tracks.value = response.results; // ✅ on prend directement les tracks ici
+    console.log('tracks.value', tracks.value);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des tracks :", error);
+  }
+});
+
+
 </script>
 
 

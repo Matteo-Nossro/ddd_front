@@ -31,8 +31,16 @@ export interface Track {
     time_signature: number;
 }
 
+interface TrackResponse{
+    count: number;
+    next?:string;
+    previous?:string;
+    results : Track[];
+
+}
+
 // Fonction pour récupérer les tracks via l’API
-export async function fetchTracks(): Promise<Track[]> {
+export async function fetchTracks(): Promise<TrackResponse> {
     try {
         const response = await fetch("http://127.0.0.1:8000/api/musique/tracks/FR/?page=2");
         if (!response.ok) {
@@ -40,7 +48,7 @@ export async function fetchTracks(): Promise<Track[]> {
         }
         const data = await response.json();
         // Si l'endpoint renvoie directement un tableau de tracks
-        return data as Track[];
+        return data as TrackResponse;
 
         // Si l'endpoint renvoie un objet avec la liste des tracks dans une propriété
         // return data.results as Track[];
