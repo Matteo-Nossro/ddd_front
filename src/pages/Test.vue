@@ -1,5 +1,5 @@
 <template>
-<DefaultContainer>
+<DefaultContainer title="Liste des Tracks">
   <TrackTable/>
 </DefaultContainer>
 

@@ -1,21 +1,20 @@
 <template>
-  <div>
-    <h1>Liste des Tracks</h1>
-    <DataTable :value="tracks" tableStyle="min-width: 50rem">
-      <Column field="name" header="Name" />
-      <Column field="artists" header="Artist" />
-      <Column field="popularity" header="Popularity" />
-      <Column header="Duration">
+    <DataTable :value="tracks"     class="styled-table"
+               tableStyle="min-width: 60rem">
+      <Column field="name" header="Nom" />
+      <Column field="artists" header="Artiste" />
+      <Column field="popularity" header="Popularité" />
+      <Column header="Durée">
         <template #body="{ data }">
           {{ formatDuration(data.duration_ms) }}
         </template>
       </Column>
-      <Column field="album_release_date" header="Release Date">
+      <Column field="album_release_date" header="Date de sortie">
         <template #body="{ data }">
           {{ formatFrenchDate(data.album_release_date) }}
         </template>
       </Column>
-      <Column field="album_name" header="Album Name" />
+      <Column field="album_name" header="Nom de l'album" />
       <Column header="Action">
         <template #body="{ data }">
           <button @click="() => handleActionClick(data)">Détails</button>
@@ -25,7 +24,6 @@
 
     <TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible" />
 
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -119,3 +117,45 @@ function handleActionClick(track: Track) {
 //   }
 // });
 </script>
+
+
+<style scoped lang="scss">
+.styled-table {
+  ::v-deep(.p-datatable-thead > tr > th) {
+    white-space: nowrap;
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+    background-color: #f5f5f5;
+    text-align: left;
+  }
+
+  ::v-deep(.p-datatable-tbody > tr) {
+    height: 3.5rem;
+
+    &:hover {
+      background-color: #f9f9f9;
+    }
+  }
+
+  ::v-deep(.p-datatable-tbody > tr > td) {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    vertical-align: middle;
+  }
+}
+
+.action-btn {
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+</style>
