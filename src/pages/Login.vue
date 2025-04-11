@@ -1,89 +1,119 @@
 <template>
   <div class="login-container">
     <h2>Connexion</h2>
-
     <div class="form-group">
-      <label for="email">Adresse e-mail</label>
+      <label for="username">Nom d'utilisateur</label>
       <InputText
-          id="email"
-          v-model="email"
-          placeholder="Entrez votre adresse e-mail"
+        id="username"
+        v-model="username"
+        placeholder="Entrez votre nom d'utilisateur"
       />
-      <!-- Message d'erreur spécifique à l'e-mail -->
-      <span v-if="emailError" class="error">{{ emailError }}</span>
+      <span v-if="usernameError" class="error">{{ usernameError }}</span>
     </div>
 
     <div class="form-group">
       <label for="password">Mot de passe</label>
       <Password
-          id="password"
-          v-model="password"
-          placeholder="Entrez votre mot de passe"
-          feedback="false"
+        id="password"
+        v-model="password"
+        placeholder="Entrez votre mot de passe"
+        feedback="false"
       />
-      <!-- Message d'erreur spécifique au mot de passe -->
       <span v-if="passwordError" class="error">{{ passwordError }}</span>
     </div>
 
-    <Button label="Se connecter" class="p-button-primary" @click="handleLogin" />
-  </div>
+    <Button
+      label="Se connecter"
+      class="p-button-primary"
+      @click="handleLogin"
+    />
 
-  <div style="margin-top: 2rem;">
-    <p>Est connecté : {{ isLoggedIn }}</p>
-    <p v-if="isLoggedIn">
-      Bonjour, {{ user.email }} (rôle : {{ user.role }})
+    <!-- Lien vers la page d'inscription -->
+    <p style="margin-top: 1rem">
+      Pas de compte ?
+      <router-link to="/Register">Inscrivez-vous ici</router-link>
     </p>
-
-    <button @click="handleLogout">Déconnexion</button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import InputText from 'primevue/inputtext'
-import Password from 'primevue/password'
-import Button from 'primevue/button'
-import { useUser } from '../composition/user/index.js'
-
-// Récupération du hook utilisateur
-const { user, isLoggedIn, setUser, clearUser } = useUser()
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import InputText from "primevue/inputtext";
+import Password from "primevue/password";
+import Button from "primevue/button";
+import { useToast } from "primevue/usetoast"; // Assurez-vous que cette fonction est disponible et configurée
 
 // Champs du formulaire
-const email = ref('')
-const password = ref('')
+const username = ref("");
+const password = ref("");
 
-// Champs d'erreur
-const emailError = ref('')
-const passwordError = ref('')
+// Champs d'erreur (pour validations locales)
+const usernameError = ref("");
+const passwordError = ref("");
 
-function handleLogin() {
-  // On réinitialise les messages d'erreur
-  emailError.value = ''
-  passwordError.value = ''
+const router = useRouter();
+const toast = useToast();
 
-  // Vérification des champs
-  if (!email.value.trim()) {
-    emailError.value = 'Adresse e-mail obligatoire.'
+async function handleLogin() {
+  // Réinitialiser les messages d'erreur
+  usernameError.value = "";
+  passwordError.value = "";
+
+  // Validation simple des champs
+  if (!username.value.trim()) {
+    usernameError.value = "Le nom d'utilisateur est obligatoire.";
   }
   if (!password.value.trim()) {
-    passwordError.value = 'Mot de passe obligatoire.'
+    passwordError.value = "Le mot de passe est obligatoire.";
+  }
+  if (usernameError.value || passwordError.value) {
+    return;
   }
 
-  // Si des erreurs sont présentes, on stoppe le processus
-  if (emailError.value || passwordError.value) {
-    return
-  }
-
-  // Si tout est OK, on "connecte" l'utilisateur (exemple)
-  setUser({
-    email: email.value,
+  const data = {
+    username: username.value,
     password: password.value,
-    role: 'admin'
-  })
-}
+  };
 
-function handleLogout() {
-  clearUser()
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/token/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      // Affiche une notification toast en cas d'erreur
+      toast.add({
+        severity: "error",
+        summary: "Erreur de connexion",
+        detail:
+          errorData.detail || "Une erreur est survenue lors de la connexion.",
+        life: 3000,
+      });
+      return;
+    }
+
+    const tokenData = await response.json();
+    // Stocker les tokens (par exemple dans localStorage)
+    localStorage.setItem("access_token", tokenData.access);
+    localStorage.setItem("refresh_token", tokenData.refresh);
+
+    // Rediriger vers la page d'accueil
+    router.push("/");
+  } catch (error) {
+    console.error("Erreur lors de la connexion :", error);
+    toast.add({
+      severity: "error",
+      summary: "Erreur de connexion",
+      detail: "Une erreur est survenue lors de la connexion au serveur.",
+      life: 3000,
+    });
+  }
 }
 </script>
 
@@ -104,11 +134,9 @@ label {
   margin-bottom: 0.5rem;
 }
 
-/* Style minimal pour l'affichage des erreurs */
 .error {
-  display: block;
   color: red;
-  margin-top: 0.25rem;
   font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 </style>
