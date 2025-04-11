@@ -32,6 +32,7 @@ export interface Track {
 }
 
 interface TrackResponse{
+    daily_rank:number;
     count: number;
     next?:string;
     previous?:string;
@@ -40,18 +41,28 @@ interface TrackResponse{
 }
 
 // Fonction pour récupérer les tracks via l’API
-export async function fetchTracks(): Promise<TrackResponse> {
+export async function fetchTracksByCountry(country: string, page = 1): Promise<TrackResponse> {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/musique/tracks/FR/?page=2");
+        const response = await fetch(`http://127.0.0.1:8000/api/musique/tracks/${country}/?page=${page}`);
         if (!response.ok) {
             throw new Error(`Erreur HTTP ! status : ${response.status}`);
         }
         const data = await response.json();
-        // Si l'endpoint renvoie directement un tableau de tracks
         return data as TrackResponse;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error);
+        throw error;
+    }
+}
 
-        // Si l'endpoint renvoie un objet avec la liste des tracks dans une propriété
-        // return data.results as Track[];
+export async function fetchTopTracksByCountryAndDate(country: string, date : string): Promise<TrackResponse> {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/musique/tracks/top/${country}/${date}/`);
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ! status : ${response.status}`);
+        }
+        const data = await response.json();
+        return data as TrackResponse;
     } catch (error) {
         console.error("Erreur lors de la récupération des données :", error);
         throw error;
@@ -60,6 +71,7 @@ export async function fetchTracks(): Promise<TrackResponse> {
 
 export function useTrack() {
     return {
-        fetchTracks: fetchTracks
+        fetchTracks: fetchTracksByCountry,
+        fetchTopTracksByCountryAndDate: fetchTopTracksByCountryAndDate
     }
 }

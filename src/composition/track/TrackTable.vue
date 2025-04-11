@@ -1,16 +1,20 @@
 <template>
 	<div class="filters">
 		<div class="filter-item">
-			<label for="startDate">Date du trie</label>
+			<label for="startDate" class="filter-label">Date du tri</label>
 			<DatePicker
-					inputId="date"
 					v-model="date"
-					dateFormat="yy-mm-dd"
+					inputId="startDate"
 					:locale="frenchLocale"
-
+					dateFormat="dd-mm-yy"
 					showIcon
+					placeholder="Sélectionner une date"
+					style="width: 100%;"
+					:minDate="new Date('2023-10-18')"
+					:maxDate="new Date('2025-04-06')"
 			/>
 		</div>
+
 
 		<div class="filter-item">
 			<label for="country">Pays</label>
@@ -24,57 +28,103 @@
 					showClear
 			/>
 		</div>
+		<div class="filter-item">
+			<label for="country">&nbsp</label>
+			<DefaultButton @click="updateTable">Rechercher</DefaultButton>
+		</div>
 	</div>
 
 
-  <DataTable :value="tracks" class="styled-table"
-             tableStyle="min-width: 60rem; 		" paginator :rows="20" :rowsPerPageOptions="[20, 50]">
-    <Column field="name" header="Nom"/>
-    <Column field="artists" header="Artiste"/>
-    <Column field="popularity" header="Popularité"/>
-    <Column header="Durée">
-      <template #body="{ data }">
-        {{ formatDuration(data.duration_ms) }}
-      </template>
-    </Column>
-    <Column field="album_release_date" header="Date de sortie">
-      <template #body="{ data }">
-        {{ formatFrenchDate(data.album_release_date) }}
-      </template>
-    </Column>
-    <Column field="album_name" header="Nom de l'album"/>
-    <Column header="Action">
-      <template #body="{ data }">
+	<DataTable
+			:value="tracks"
+			class="styled-table"
+			tableStyle="min-width: 60rem"
+			:paginator="true"
+			:rows="rowsPerPage"
+			:totalRecords="totalCount"
+			:first="(currentPage - 1) * rowsPerPage"
+			@page="onPageChange"
+	>
+		<template #empty>Pas de données pour ce pays / date</template>
+		<Column field="daily_rank" header="Rang"/>
+		<Column field="name" header="Nom"/>
+		<Column field="artists" header="Artiste"/>
+		<Column field="popularity" header="Popularité"/>
+		<Column header="Durée">
+			<template #body="{ data }">
+				{{ formatDuration(data.duration_ms) }}
+			</template>
+		</Column>
+		<Column field="album_release_date" header="Date de sortie">
+			<template #body="{ data }">
+				{{ formatFrenchDate(data.album_release_date) }}
+			</template>
+		</Column>
+		<Column field="album_name" header="Nom de l'album"/>
+		<Column header="Action">
+			<template #body="{ data }">
 				<DefaultButton variant="primary" @click="() => handleActionClick(data)">
 					Détails
 				</DefaultButton>
-      </template>
-    </Column>
-  </DataTable>
+			</template>
+		</Column>
+	</DataTable>
 
-  <TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible"/>
+	<TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible"/>
 
 </template>
 
 <script setup lang="ts">
 import {ref, onMounted} from 'vue';
-import type {Track} from "./index.ts";       // Mettez le chemin correct vers votre interface
-import {fetchTracks} from "./index.ts";
+import {fetchTracksByCountry,fetchTopTracksByCountryAndDate, type Track} from "./index.ts";       // Mettez le chemin correct vers votre interface
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TrackDetailsPopup from "./TrackDetailsPopup.vue";
 import DefaultButton from "../../components/DefaultButton.vue";
 import DatePicker from 'primevue/datepicker';
 import Dropdown from 'primevue/dropdown';
+
+import {CountryName} from '../../enum/countries.ts'; // Remplace avec le bon chemin
+
 const tracks = ref<Track[]>([]);
 const selectedTrack = ref<Track | null>(null);
 const popupVisible = ref(false);
 
-
-import { CountryName } from '../../enum/countries.ts'; // Remplace avec le bon chemin
-
 const date = ref<string | null>(null);
-const selectedCountry = ref<string | null>(null);
+const selectedCountry = ref<string>('FR');
+const currentPage = ref<number>(1);
+const totalCount = ref<number>(0);
+const rowsPerPage = ref<number>(20);
+
+// Pagination
+const updateTable = async () => {
+	if (!selectedCountry.value) return;
+
+	console.log('date.value',date.value);
+	if (date.value) {
+		try {
+			const response = await fetchTopTracksByCountryAndDate(selectedCountry.value, formatToYMD(date.value));
+			tracks.value = response.results;
+			totalCount.value = response.count;
+		} catch (error) {
+			console.error("Erreur lors de la récupération des données :", error);
+		}
+	} else {
+		try {
+			const response = await fetchTracksByCountry(selectedCountry.value, currentPage.value);
+			tracks.value = response.results;
+			totalCount.value = response.count;
+		} catch (error) {
+			console.error("Erreur lors de la récupération des données :", error);
+		}
+	}
+};
+
+const onPageChange = (event: any) => {
+	currentPage.value = event.page + 1; // PrimeVue commence à 0
+	updateTable();
+};
+
 
 // 📜 Locale pour afficher les dates en français
 const frenchLocale = {
@@ -95,38 +145,45 @@ const countries = Object.entries(CountryName).map(([code, name]) => ({
 }));
 
 
-// 2023-10-18 et 2025-04-06 (format YYYY-MM-DD)
-
-
 // 💡 Convertit la durée en mm:ss
 function formatDuration(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000);
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+	const minutes = Math.floor(ms / 60000);
+	const seconds = Math.floor((ms % 60000) / 1000);
+	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function formatToYMD(dateString: string): string {
+	const date = new Date(dateString);
+
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0'); // Mois = 0-indexé
+	const day = String(date.getDate()).padStart(2, '0');
+
+	return `${year}-${month}-${day}`;
 }
 
 function formatFrenchDate(dateString: string): string {
-  if (!dateString) return '';
+	if (!dateString) return '';
 
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
-    // La date n'est pas valide
-    return dateString;
-  }
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) {
+		// La date n'est pas valide
+		return dateString;
+	}
 
-  const day = date.getDate().toString().padStart(2, '0');
-  // Mois : +1 car getMonth() retourne 0 pour janvier, 1 pour février, etc.
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
+	const day = date.getDate().toString().padStart(2, '0');
+	// Mois : +1 car getMonth() retourne 0 pour janvier, 1 pour février, etc.
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	const year = date.getFullYear();
 
-  return `${day}/${month}/${year}`;
+	return `${day}/${month}/${year}`;
 }
 
 
 // 🛎️ Action du bouton
 function handleActionClick(track: Track) {
-  selectedTrack.value = track;
-  popupVisible.value = true;
+	selectedTrack.value = track;
+	popupVisible.value = true;
 }
 
 // onMounted(async () => {
@@ -141,13 +198,13 @@ function handleActionClick(track: Track) {
 //   }
 // });
 onMounted(async () => {
-  try {
-    const response = await fetchTracks();
-    tracks.value = response.results; // ✅ on prend directement les tracks ici
-    console.log('tracks.value', tracks.value);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des tracks :", error);
-  }
+	try {
+		const response = await fetchTracksByCountry('FR', 1);
+		tracks.value = response.results; // ✅ on prend directement les tracks ici
+		console.log('tracks.value', tracks.value);
+	} catch (error) {
+		console.error("Erreur lors de la récupération des tracks :", error);
+	}
 });
 
 
@@ -174,50 +231,55 @@ onMounted(async () => {
 	}
 }
 
-
+.p-datatable{
+	overflow-y: scroll;
+	width: 100%;
+}
 .styled-table {
 
-  ::v-deep(.p-datatable-thead > tr > th) {
-    white-space: nowrap;
-    padding: 1rem 1.5rem;
-    font-size: 0.95rem;
-    background-color: #f5f5f5;
-    text-align: left;
-  }
 
-	::v-deep(.p-datatable) {
-		max-height : calc(100vh - 9rem);
-		overflow-y: scroll;
+	::v-deep(.p-datatable-thead > tr > th) {
+		white-space: nowrap;
+		padding: 1rem 1.5rem;
+		font-size: 0.95rem;
+		background-color: #f5f5f5;
+		text-align: left;
 	}
 
-  ::v-deep(.p-datatable-tbody > tr) {
-    height: 3.5rem;
+	::v-deep(.p-datatable) {
+		max-height: calc(100vh - 9rem);
+		overflow-y: scroll;
+		width: 100%;
+	}
+
+	::v-deep(.p-datatable-tbody > tr) {
+		height: 3.5rem;
 
 
-    &:hover {
-      background-color: #f9f9f9;
-    }
-  }
+		&:hover {
+			background-color: #f9f9f9;
+		}
+	}
 
-  ::v-deep(.p-datatable-tbody > tr > td) {
-    padding: 0.8rem 1.5rem;
-    font-size: 0.95rem;
-    vertical-align: middle;
-  }
+	::v-deep(.p-datatable-tbody > tr > td) {
+		padding: 0.8rem 1.5rem;
+		font-size: 0.95rem;
+		vertical-align: middle;
+	}
 }
 
 .action-btn {
-  background-color: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background-color 0.2s ease;
+	background-color: #3b82f6;
+	color: #fff;
+	border: none;
+	padding: 0.4rem 0.8rem;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 0.85rem;
+	transition: background-color 0.2s ease;
 
-  &:hover {
-    background-color: #2563eb;
-  }
+	&:hover {
+		background-color: #2563eb;
+	}
 }
 </style>
