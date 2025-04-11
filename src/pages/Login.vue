@@ -42,7 +42,9 @@ import { useRouter } from "vue-router";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
-import { useToast } from "primevue/usetoast"; // Assurez-vous que cette fonction est disponible et configurée
+import { useToast } from "primevue/usetoast";
+import { useUser } from "../composition/user"; // Assurez-vous que le chemin est correct
+import { jwtDecode } from "jwt-decode";
 
 // Champs du formulaire
 const username = ref("");
@@ -54,6 +56,7 @@ const passwordError = ref("");
 
 const router = useRouter();
 const toast = useToast();
+const { setUser } = useUser();
 
 async function handleLogin() {
   // Réinitialiser les messages d'erreur
@@ -87,7 +90,6 @@ async function handleLogin() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      // Affiche une notification toast en cas d'erreur
       toast.add({
         severity: "error",
         summary: "Erreur de connexion",
@@ -99,11 +101,19 @@ async function handleLogin() {
     }
 
     const tokenData = await response.json();
-    // Stocker les tokens (par exemple dans localStorage)
+    // Stocker les tokens dans localStorage
     localStorage.setItem("access_token", tokenData.access);
     localStorage.setItem("refresh_token", tokenData.refresh);
 
-    // Rediriger vers la page d'accueil
+    // Décode le token pour obtenir des informations sur l'utilisateur
+    const decoded = jwtDecode<any>(tokenData.access);
+    // On suppose que le token contient 'username' et 'role'
+    setUser({
+      username: decoded.username,
+      role: decoded.role,
+    });
+
+    // Redirection vers la page d'accueil
     router.push("/");
   } catch (error) {
     console.error("Erreur lors de la connexion :", error);

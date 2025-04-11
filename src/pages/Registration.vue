@@ -62,9 +62,14 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
+import { useToast } from "primevue/usetoast";
+
+const router = useRouter();
+const toast = useToast();
 
 // Champs du formulaire
 const username = ref("");
@@ -127,9 +132,7 @@ async function handleRegister() {
       "http://127.0.0.1:8000/api/accounts/register/",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       }
     );
@@ -141,9 +144,17 @@ async function handleRegister() {
       return;
     }
 
-    const result = await response.json();
-    console.log("Inscription réussie:", result);
-    // Vous pouvez par la suite rediriger l'utilisateur ou afficher un message de succès
+    // Inscription réussie : Afficher le toast de succès et rediriger
+    toast.add({
+      severity: "success",
+      summary: "Inscription réussie",
+      detail: "Votre compte a été créé avec succès.",
+      life: 3000,
+    });
+
+    // Redirection après une brève pause (3000 ms, par exemple) ou immédiate
+    // Ici, on redirige directement vers la page de login ("/login") par exemple
+    router.push("/login");
   } catch (error) {
     console.error("Erreur lors de l'inscription :", error);
     registrationError.value =
