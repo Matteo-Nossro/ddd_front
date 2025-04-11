@@ -3,12 +3,10 @@ import App from "./App.vue";
 import "./style.css";
 
 // ✅ PrimeVue
-// import "primevue/resources/themes/lara-light-blue/theme.css"; // Choisis le thème que tu veux ici
-// import "primevue/resources/themes/lara-common.css";
 import "primeicons/primeicons.css";
 
-import Aura from "@primevue/themes/aura";
 import PrimeVue from "primevue/config";
+import Aura from "@primeuix/themes/aura";
 import ToastService from "primevue/toastservice";
 import Toast from "primevue/toast";
 
@@ -47,6 +45,7 @@ const app = createApp(App);
 
 // ✅ Config PrimeVue avec locale française (optionnel mais recommandé)
 app.use(PrimeVue, {
+  // Default theme configuration
   theme: {
     preset: Aura,
     options: {
@@ -143,9 +142,9 @@ router.beforeEach((to, from, next) => {
 
 app.use(router);
 app.use(ToastService);
-
 // ✅ Ajout de composants globaux
 app.component("v-chart", VueECharts);
+
 app.component("Toast", Toast);
 
 // ✅ Mount

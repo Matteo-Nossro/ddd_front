@@ -51,7 +51,7 @@ function handleClick(event) {
 }
 
 .reusable-button.primary {
-	background-color: #3b82f6;
+	background-color: #10b981;
 	color: white;
 }
 
@@ -60,7 +60,7 @@ function handleClick(event) {
 }
 
 .reusable-button.secondary {
-	background-color: #f3f4f6;
+	background-color: #2563eb;
 	color: #111827;
 }
 
