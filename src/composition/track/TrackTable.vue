@@ -1,4 +1,32 @@
 <template>
+	<div class="filters">
+		<div class="filter-item">
+			<label for="startDate">Date du trie</label>
+			<DatePicker
+					inputId="date"
+					v-model="date"
+					dateFormat="yy-mm-dd"
+					:locale="frenchLocale"
+
+					showIcon
+			/>
+		</div>
+
+		<div class="filter-item">
+			<label for="country">Pays</label>
+			<Dropdown
+					v-model="selectedCountry"
+					:options="countries"
+					optionLabel="name"
+					optionValue="code"
+					placeholder="Sélectionner un pays"
+					filter
+					showClear
+			/>
+		</div>
+	</div>
+
+
   <DataTable :value="tracks" class="styled-table"
              tableStyle="min-width: 60rem; 		" paginator :rows="20" :rowsPerPageOptions="[20, 50]">
     <Column field="name" header="Nom"/>
@@ -36,10 +64,38 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TrackDetailsPopup from "./TrackDetailsPopup.vue";
 import DefaultButton from "../../components/DefaultButton.vue";
-
+import DatePicker from 'primevue/datepicker';
+import Dropdown from 'primevue/dropdown';
 const tracks = ref<Track[]>([]);
 const selectedTrack = ref<Track | null>(null);
 const popupVisible = ref(false);
+
+
+import { CountryName } from '../../enum/countries.ts'; // Remplace avec le bon chemin
+
+const date = ref<string | null>(null);
+const selectedCountry = ref<string | null>(null);
+
+// 📜 Locale pour afficher les dates en français
+const frenchLocale = {
+	firstDayOfWeek: 1,
+	dayNames: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+	dayNamesShort: ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'],
+	dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+	monthNames: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+	monthNamesShort: ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'],
+	today: "Aujourd'hui",
+	clear: 'Effacer'
+};
+
+// 🔄 Transformer l’enum en tableau d’objets
+const countries = Object.entries(CountryName).map(([code, name]) => ({
+	name,
+	code
+}));
+
+
+// 2023-10-18 et 2025-04-06 (format YYYY-MM-DD)
 
 
 // 💡 Convertit la durée en mm:ss
@@ -99,6 +155,26 @@ onMounted(async () => {
 
 
 <style scoped lang="scss">
+.filters {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+	align-items: center;
+	flex-wrap: wrap;
+
+	.filter-item {
+		display: flex;
+		flex-direction: column;
+	}
+
+	label {
+		margin-bottom: 0.3rem;
+		font-weight: 500;
+		font-size: 0.9rem;
+	}
+}
+
+
 .styled-table {
 
   ::v-deep(.p-datatable-thead > tr > th) {
