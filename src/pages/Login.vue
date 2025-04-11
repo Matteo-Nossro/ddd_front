@@ -18,6 +18,7 @@
         v-model="password"
         placeholder="Entrez votre mot de passe"
         feedback="false"
+        toggleMask
       />
       <span v-if="passwordError" class="error">{{ passwordError }}</span>
     </div>
@@ -26,6 +27,7 @@
       label="Se connecter"
       class="p-button-primary"
       @click="handleLogin"
+      :loading="loading"
     />
 
     <!-- Lien vers la page d'inscription -->
@@ -43,12 +45,13 @@ import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import { useToast } from "primevue/usetoast";
-import { useUser } from "../composition/user"; // Assurez-vous que le chemin est correct
+import { useUser } from "../composition/user";
 import { jwtDecode } from "jwt-decode";
 
 // Champs du formulaire
 const username = ref("");
 const password = ref("");
+const loading = ref(false);
 
 // Champs d'erreur (pour validations locales)
 const usernameError = ref("");
@@ -79,8 +82,10 @@ async function handleLogin() {
     password: password.value,
   };
 
+  loading.value = true;
+
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/token/", {
+    const response = await fetch("http://127.0.0.1:8000/api/accounts/token/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -97,6 +102,7 @@ async function handleLogin() {
           errorData.detail || "Une erreur est survenue lors de la connexion.",
         life: 3000,
       });
+      loading.value = false;
       return;
     }
 
@@ -107,10 +113,20 @@ async function handleLogin() {
 
     // Décode le token pour obtenir des informations sur l'utilisateur
     const decoded = jwtDecode<any>(tokenData.access);
-    // On suppose que le token contient 'username' et 'role'
+    console.log("Token décodé :", decoded);
+
+    // Récupérer les informations utilisateur du token
     setUser({
-      username: decoded.username,
-      role: decoded.role,
+      username: decoded.username || username.value,
+      role: decoded.role || "inconnu",
+    });
+
+    // Notification de succès
+    toast.add({
+      severity: "success",
+      summary: "Connexion réussie",
+      detail: `Bienvenue, ${decoded.username || username.value} !`,
+      life: 3000,
     });
 
     // Redirection vers la page d'accueil
@@ -123,6 +139,8 @@ async function handleLogin() {
       detail: "Une erreur est survenue lors de la connexion au serveur.",
       life: 3000,
     });
+  } finally {
+    loading.value = false;
   }
 }
 </script>
@@ -132,21 +150,40 @@ async function handleLogin() {
   max-width: 400px;
   margin: 0 auto;
   padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 label {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #333;
 }
 
 .error {
-  color: red;
+  color: #e24c4c;
   font-size: 0.875rem;
   margin-top: 0.25rem;
+  display: block;
+}
+
+.p-button-primary {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+:deep(.p-password input) {
+  width: 100%;
+}
+
+:deep(.p-inputtext) {
+  width: 100%;
 }
 </style>

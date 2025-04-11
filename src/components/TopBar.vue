@@ -1,17 +1,14 @@
 <template>
   <div class="topbar">
     <div class="menu_icon">
-      <!-- Vous pouvez afficher ici une icône ou un logo -->
       <img src="../assets/ddd_logo.png" class="lmh-icon" alt="Logo" />
     </div>
 
-    <!-- Si l'utilisateur est connecté, affiche les infos et un bouton de déconnexion -->
     <div v-if="isLoggedIn" class="user-info">
-      <span>{{ user.username }} ({{ user.role }})</span>
+      <span>{{ user?.username }} ({{ user?.role }})</span>
       <Button label="Déconnexion" class="logout-button" @click="handleLogout" />
     </div>
 
-    <!-- Sinon, affiche un lien vers la page de login -->
     <div v-else class="login-link">
       <router-link to="/login">Se connecter</router-link>
     </div>
@@ -19,23 +16,17 @@
 </template>
 
 <script setup lang="ts">
-import { useUser } from "../composition/user"; // Ajustez le chemin en fonction de votre projet
+import { useUser } from "../composition/user";
+import { useAuth } from "../composition/auth"; // Importez le nouveau hook
 import Button from "primevue/button";
-import { useRouter } from "vue-router";
 
-// On récupère le state utilisateur depuis le hook "useUser"
-// Ce hook devrait fournir user (par ex. { username, role }),
-// isLoggedIn (booléen) et clearUser() pour déconnecter.
-const { user, isLoggedIn, clearUser } = useUser();
-const router = useRouter();
+const { user, isLoggedIn } = useUser();
+const { logout } = useAuth(); // Utilisez la fonction de déconnexion du hook auth
 
 function handleLogout() {
-  clearUser();
-  // Optionnel : vous pouvez rediriger vers la page de login ou l'accueil après déconnexion
-  router.push("/login");
+  logout();
 }
 </script>
-
 <style scoped lang="scss">
 .topbar {
   height: 80px;

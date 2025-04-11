@@ -1,7 +1,7 @@
-// src/composition/user/index.js
+// src/composition/user/index.js (ou index.ts)
 import { reactive, toRefs } from "vue";
 
-// On crée un objet réactif global
+// Cet état sera partagé entre tous les composants qui importent useUser
 const state = reactive({
   user: null,
   isLoggedIn: false,
@@ -10,6 +10,7 @@ const state = reactive({
 function setUser(newUser) {
   state.user = newUser;
   state.isLoggedIn = true;
+  console.log("setUser:", state.user); // Vérifiez ici
 }
 
 function clearUser() {
