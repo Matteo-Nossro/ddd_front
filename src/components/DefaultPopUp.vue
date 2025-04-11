@@ -23,7 +23,6 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits } from 'vue'
 import Dialog from 'primevue/dialog'
-import Button from 'primevue/button'
 import DefaultButton from "./DefaultButton.vue";
 
 const props = defineProps<{
