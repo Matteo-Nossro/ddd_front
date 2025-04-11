@@ -1,6 +1,6 @@
 <template>
   <DataTable :value="tracks" class="styled-table"
-             tableStyle="min-width: 60rem">
+             tableStyle="min-width: 60rem; 		" paginator :rows="20" :rowsPerPageOptions="[20, 50]">
     <Column field="name" header="Nom"/>
     <Column field="artists" header="Artiste"/>
     <Column field="popularity" header="Popularité"/>
@@ -17,7 +17,9 @@
     <Column field="album_name" header="Nom de l'album"/>
     <Column header="Action">
       <template #body="{ data }">
-        <button @click="() => handleActionClick(data)">Détails</button>
+				<DefaultButton variant="primary" @click="() => handleActionClick(data)">
+					Détails
+				</DefaultButton>
       </template>
     </Column>
   </DataTable>
@@ -33,39 +35,11 @@ import {fetchTracks} from "./index.ts";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TrackDetailsPopup from "./TrackDetailsPopup.vue";
+import DefaultButton from "../../components/DefaultButton.vue";
 
 const tracks = ref<Track[]>([]);
 const selectedTrack = ref<Track | null>(null);
 const popupVisible = ref(false);
-
-const columns = [
-  {field: 'id', header: 'ID'},
-  {field: 'country', header: 'Country'},
-  {field: 'spotify_id', header: 'Spotify ID'},
-  {field: 'name', header: 'Name'},
-  {field: 'artists', header: 'Artists'},
-  {field: 'daily_rank', header: 'Daily Rank'},
-  {field: 'daily_movement', header: 'Daily Movement'},
-  {field: 'weekly_movement', header: 'Weekly Movement'},
-  {field: 'snapshot_date', header: 'Snapshot Date'},
-  {field: 'popularity', header: 'Popularity'},
-  {field: 'is_explicit', header: 'Explicit'},
-  {field: 'duration_ms', header: 'Duration (ms)'},
-  {field: 'album_name', header: 'Album Name'},
-  {field: 'album_release_date', header: 'Album Release Date'},
-  {field: 'danceability', header: 'Danceability'},
-  {field: 'energy', header: 'Energy'},
-  {field: 'key', header: 'Key'},
-  {field: 'loudness', header: 'Loudness'},
-  {field: 'mode', header: 'Mode'},
-  {field: 'speechiness', header: 'Speechiness'},
-  {field: 'acousticness', header: 'Acousticness'},
-  {field: 'instrumentalness', header: 'Instrumentalness'},
-  {field: 'liveness', header: 'Liveness'},
-  {field: 'valence', header: 'Valence'},
-  {field: 'tempo', header: 'Tempo'},
-  {field: 'time_signature', header: 'Time Signature'}
-];
 
 
 // 💡 Convertit la durée en mm:ss
@@ -126,6 +100,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .styled-table {
+
   ::v-deep(.p-datatable-thead > tr > th) {
     white-space: nowrap;
     padding: 1rem 1.5rem;
@@ -134,8 +109,14 @@ onMounted(async () => {
     text-align: left;
   }
 
+	::v-deep(.p-datatable) {
+		max-height : calc(100vh - 9rem);
+		overflow-y: scroll;
+	}
+
   ::v-deep(.p-datatable-tbody > tr) {
     height: 3.5rem;
+
 
     &:hover {
       background-color: #f9f9f9;
