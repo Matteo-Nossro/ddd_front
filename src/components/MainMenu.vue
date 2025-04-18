@@ -27,16 +27,14 @@ const menuItems = ref([
 		route: '/',
 	},
 	{
-		label: 'Gestions des formats de données',
+		label: 'Page de test',
 		icon: 'pi pi-link',
-		route: '/gestions-regex',
-		permission: ['Consultation des regex'],
+		route: '/test',
 	},
 	{
-		label: 'Gestions des formats de fichiers',
+		label: 'Test de map',
 		icon: 'pi pi-clipboard',
-		route: '/gestions-filesformat',
-		permission: ['Consultation des Format de fichiers'],
+		route: '/maps',
 	},
 	{
 		label: 'Gestions des utilisateurs',
