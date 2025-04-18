@@ -5,6 +5,9 @@
   <TrackTable/>
 </DefaultContainer>
 
+<DefaultContainer title="Liste des Pays">
+  <ChartTest/>
+</DefaultContainer>
 
 </template>
 <script setup lang="ts">
@@ -12,6 +15,7 @@
 import TrackTable from "../composition/track/TrackTable.vue";
 import DefaultContainer from "../components/DefaultContainer.vue";
 import MainMenu from "../components/MainMenu.vue";
+import ChartTest from "../components/ChartTest.vue";
 </script>
 <style scoped>
 
