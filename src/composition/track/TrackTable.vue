@@ -63,14 +63,18 @@
 		<Column field="album_name" header="Nom de l'album"/>
 		<Column header="Action">
 			<template #body="{ data }">
-				<DefaultButton variant="primary" @click="() => handleActionClick(data)">
-					Détails
-				</DefaultButton>
+        <DefaultButton  v-if="props.suggestion"  variant="primary" @click="() => handleOpenSuggestions(data)">
+          Suggestions
+        </DefaultButton>
+        <DefaultButton v-else variant="primary" @click="() => handleOpenDetails(data)">
+          Détails
+        </DefaultButton>
 			</template>
 		</Column>
 	</DataTable>
 
-	<TrackDetailsPopup :track="selectedTrack" v-model:visible="popupVisible"/>
+  <TrackSuggestionPopup  v-if="props.suggestion"  :track="selectedTrack" v-model:visible="popupSuggestionVisible"/>
+	<TrackDetailsPopup v-else :track="selectedTrack" v-model:visible="popupDetailsVisible"/>
 
 </template>
 
@@ -80,15 +84,22 @@ import {fetchTracksByCountry,fetchTopTracksByCountryAndDate, type Track} from ".
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TrackDetailsPopup from "./TrackDetailsPopup.vue";
+import TrackSuggestionPopup from "./TrackSuggestionPopup.vue"
 import DefaultButton from "../../components/DefaultButton.vue";
 import DatePicker from 'primevue/datepicker';
 import Dropdown from 'primevue/dropdown';
 
-import {CountryName} from '../../enum/countries.ts'; // Remplace avec le bon chemin
+const props = defineProps<{
+  suggestion: boolean;
+  inputTracks?:Track[];
+}>()
+
+import {CountryName} from '../../enum/countries.ts';
 
 const tracks = ref<Track[]>([]);
 const selectedTrack = ref<Track | null>(null);
-const popupVisible = ref(false);
+const popupSuggestionVisible = ref(false);
+const popupDetailsVisible = ref(false);
 
 const date = ref<string | null>(null);
 const selectedCountry = ref<string>('FR');
@@ -181,9 +192,14 @@ function formatFrenchDate(dateString: string): string {
 
 
 // 🛎️ Action du bouton
-function handleActionClick(track: Track) {
+function handleOpenDetails(track: Track) {
 	selectedTrack.value = track;
-	popupVisible.value = true;
+	popupDetailsVisible.value = true;
+}
+function handleOpenSuggestions(track: Track) {
+  console.log('handleOpenSuggestions')
+	selectedTrack.value = track;
+  popupSuggestionVisible.value = true;
 }
 
 // onMounted(async () => {
@@ -198,7 +214,10 @@ function handleActionClick(track: Track) {
 //   }
 // });
 onMounted(async () => {
-	try {
+  console.log(props.inputTracks)
+  if (props.inputTracks?.length !== 0 && props.inputTracks !== undefined) return;
+
+  try {
 		const response = await fetchTracksByCountry('FR', 1);
 		tracks.value = response.results; // ✅ on prend directement les tracks ici
 		console.log('tracks.value', tracks.value);

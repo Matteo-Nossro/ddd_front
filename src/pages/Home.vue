@@ -1,13 +1,6 @@
 <template>
   <div class="app">
-<!--    <h1>Dashboard</h1>-->
-
-<!--    <Button label="Clique moi" class="p-button-primary" @click="onClick" />-->
-
-<!--    <v-chart :option="chartOptions" style="height: 400px; width: 100%; margin-top: 2rem;" />-->
-
-<!--    <router-link to="/" style="display: block; margin-top: 2rem;">Retour à l'accueil</router-link>-->
-<!--    <Maps/>-->
+    <h1>Dashboard</h1>
   </div>
 </template>
 
