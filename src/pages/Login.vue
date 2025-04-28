@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
@@ -58,6 +58,7 @@ const usernameError = ref("");
 const passwordError = ref("");
 
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const { setUser } = useUser();
 
@@ -130,7 +131,8 @@ async function handleLogin() {
     });
 
     // Redirection vers la page d'accueil
-    router.push("/");
+    const redirect = route.query.redirect || "/";
+    router.push(redirect as string);
   } catch (error) {
     console.error("Erreur lors de la connexion :", error);
     toast.add({
