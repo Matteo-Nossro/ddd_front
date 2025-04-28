@@ -4,6 +4,7 @@ import "./style.css";
 
 // ✅ PrimeVue
 import "primeicons/primeicons.css";
+import "primeicons/primeicons.css";
 
 import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
