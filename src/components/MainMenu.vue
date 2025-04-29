@@ -1,19 +1,33 @@
 <!-- src/components/Menu.vue -->
 <template>
   <section class="menu-container">
-    <Menu :model="primeMenuItems" :style="{ border: 'none' }">
+    <Menu :model="filteredMenu" :style="{ border: 'none' }">
       <template #item="{ item, props }">
         <router-link
             v-if="item.route"
+            custom
             v-slot="{ href, navigate }"
             :to="item.route"
-            custom
         >
-          <a :href="href" v-bind="props.action" @click="navigate" class="flex items-center p-2 hover:bg-gray-100 rounded">
+          <a
+              :href="href"
+              v-bind="props.action"
+              @click.prevent="e => { props.action.onClick?.(e); navigate(e) }"
+              class="flex items-center p-2 hover:bg-gray-100 rounded"
+          >
             <span :class="item.icon" />
             <span class="ml-2">{{ item.label }}</span>
           </a>
         </router-link>
+        <a
+            v-else
+            :href="item.url"
+            v-bind="props.action"
+            class="flex items-center p-2 hover:bg-gray-100 rounded"
+        >
+          <span :class="item.icon" />
+          <span class="ml-2">{{ item.label }}</span>
+        </a>
       </template>
     </Menu>
   </section>
@@ -24,38 +38,32 @@ import { computed } from 'vue'
 import Menu from 'primevue/menu'
 import {useUser} from "../composition/user/index.js";
 
-// 1) Déclaration de tous les items avec, éventuellement, allowedRoles
+// 1) On doit utiliser **exactement** les mêmes noms que dans src/router/routes.ts
+//    → on se réfère aux **names** des routes, pas aux chemins en dur.
 const allMenuItems = [
-  { label: 'Accueil',   icon: 'pi pi-home',    route: '/',         allowedRoles: [] },
-  { label: 'Profil',    icon: 'pi pi-user',    route: '/profile',  allowedRoles: ['user','admin'] },
-  { label: 'Admin',     icon: 'pi pi-shield',  route: '/admin',    allowedRoles: ['admin'] },
-  { label: 'Connexion', icon: 'pi pi-sign-in', route: '/login',    allowedRoles: ['guest'] },
-  { label: 'À propos',  icon: 'pi pi-info',    route: '/about' }  // pas de allowedRoles => tout le monde
+  { label: 'Accueil',       icon: 'pi pi-home',      route: { name: 'Home' } },
+  { label: 'Maps',          icon: 'pi pi-map',       route: { name: 'Maps' } },
+  { label: 'Test',          icon: 'pi pi-cog',       route: { name: 'test' } },
+  { label: 'Dashboard',     icon: 'pi pi-users',     route: { name: 'UserDashboard' }, allowedRoles: ['admin'] },
+  { label: 'Connexion',     icon: 'pi pi-sign-in',   route: { name: 'Login' },       allowedRoles: ['guest'] },
+  { label: 'Inscription',   icon: 'pi pi-user-plus', route: { name: 'Register' },    allowedRoles: ['guest'] },
+  // pas de allowedRoles ⇒ tout le monde y a accès
 ]
 
 // 2) Récupération de l’état utilisateur
 const { user, isLoggedIn } = useUser()
 
-// 3) Filtrage dynamique selon le rôle (par défaut 'guest' si non-connecté)
+// 3) Filtrage réactif
 const filteredMenu = computed(() => {
   const role = isLoggedIn.value ? user.value.role : 'guest'
   return allMenuItems.filter(item => {
+    // si pas de clé allowedRoles OU tableau vide → accessible à tous
     if (!item.allowedRoles || item.allowedRoles.length === 0) {
       return true
     }
     return item.allowedRoles.includes(role)
   })
 })
-
-// 4) Adaptation au modèle attendu par PrimeVue (<Menu :model="...">)
-const primeMenuItems = computed(() =>
-    filteredMenu.value.map(item => ({
-      label: item.label,
-      icon:  item.icon,
-      command: () => {},    // on n'utilise pas command ici, on passe par router-link
-      route: item.route
-    }))
-)
 </script>
 
 <style scoped lang="scss">

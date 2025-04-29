@@ -9,14 +9,6 @@
   <ChartTest/>
 </DefaultContainer>
 
-<DefaultContainer title="Globe">
-  <MapsThreeJs/>
-</DefaultContainer>
-
-<DefaultContainer title="planisphère">
-  <SelectableWorldMap/>
-  <p>Pays choisis : {{ countries.join(', ') }}</p>
-</DefaultContainer>
 
 </template>
 <script setup lang="ts">
@@ -26,8 +18,6 @@ import TrackTable from "../composition/track/TrackTable.vue";
 import DefaultContainer from "../components/DefaultContainer.vue";
 import MainMenu from "../components/MainMenu.vue";
 import ChartTest from "../components/ChartTest.vue";
-import MapsThreeJs from "../components/MapsThreeJs.vue";
-import SelectableWorldMap from "../components/SelectableWorldMap.vue";
 
 const countries = ref<string[]>(['FR', 'DE']);
 
