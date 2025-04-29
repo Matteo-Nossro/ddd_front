@@ -13,11 +13,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Si la route nécessite une authentification
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    const { checkAuthStatus } = useAuth();
-    const { user } = useUser();
+    // const { checkAuthStatus } = useAuth();
+    const { user,isLoggedIn } = useUser();
 
     // Vérifier si l'utilisateur est connecté
-    if (!checkAuthStatus()) {
+    if (!isLoggedIn) {
       // Rediriger vers la page de connexion avec le chemin cible pour retour après connexion
       next({
         name: "Login",

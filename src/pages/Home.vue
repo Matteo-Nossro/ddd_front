@@ -1,50 +1,62 @@
 <template>
   <MainMenu/>
-  <DefaultContainer v-if="user.role='citizen'" title="Liste des Tracks">
+  <div v-if="isLoggedIn">
+
+
+
+  <!-- on ne montre ce container QUE si l'utilisateur existe et est citizen -->
+  <DefaultContainer
+      v-if="isLoggedIn && user.role === 'citizen'"
+      title="Liste des Tracks"
+  >
     <TrackTable suggestion/>
   </DefaultContainer>
-  <DefaultContainer v-else-if="user.role='scientist'" title="Liste des Tracks">
-    <TrackTable suggestion="false"/>
+
+  <!-- sinon si scientist -->
+  <DefaultContainer
+      v-else-if="isLoggedIn && user.role === 'scientist'"
+      title="Liste des Tracks"
+  >
+    <TrackTable :suggestion="false"/>
   </DefaultContainer>
-  <div v-else >
+
+  <!-- sinon (guest ou autre) -->
+  <div v-else>
     <DefaultContainer title="Liste des Tracks Suggestion">
       <TrackTable suggestion/>
     </DefaultContainer>
-
     <DefaultContainer title="Liste des Tracks analyse">
-      <TrackTable suggestion="false"/>
+      <TrackTable :suggestion="false"/>
     </DefaultContainer>
+  </div>
+  </div>
+  <div v-else>
+    Veuillez vous connecter
+
+    <DefaultButton @click="redirectToLogin">
+      Se connecter
+    </DefaultButton>
 
   </div>
-  {{user.role}}
-
-  <DefaultContainer v-if="user.role != 'citizen'" title="Liste des Pays">
-    <ChartTest/>
-  </DefaultContainer>
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
-import Button from 'primevue/button'
 import {useUser} from "../composition/user/index.js";
-import Maps from "../components/Maps.vue";
-import ChartTest from "../components/ChartTest.vue";
 import MainMenu from "../components/MainMenu.vue";
 import TrackTable from "../composition/track/TrackTable.vue";
 import DefaultContainer from "../components/DefaultContainer.vue";
+import DefaultButton from "../components/DefaultButton.vue";
+import {useRoute, useRouter} from "vue-router";
 
 const { user, isLoggedIn } = useUser()
-
-
-
-const onClick = () => {
-  console.log('user ',user)
-  alert('Bouton cliqué !')
+const router = useRouter()
+const route = useRoute()
+const redirectToLogin = () => {
+  router.push({
+    name: 'Login',
+    query: { redirect: route.fullPath }
+  })
 }
-
-onMounted(()=>{
-  console.log('user.value.role',user.value.role)
-})
 </script>
 
 <style scoped>

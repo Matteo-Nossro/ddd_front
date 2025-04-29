@@ -12,7 +12,7 @@
           <a
               :href="href"
               v-bind="props.action"
-              @click.prevent="e => { props.action.onClick?.(e); navigate(e) }"
+              @click.prevent="(e) => { props.action.onClick?.(e); navigate(); }"
               class="flex items-center p-2 hover:bg-gray-100 rounded"
           >
             <span :class="item.icon" />
@@ -38,30 +38,36 @@ import { computed } from 'vue'
 import Menu from 'primevue/menu'
 import {useUser} from "../composition/user/index.js";
 
-// 1) On doit utiliser **exactement** les mêmes noms que dans src/router/routes.ts
-//    → on se réfère aux **names** des routes, pas aux chemins en dur.
+// 1) Définition des items, avec requiresAuth et allowedRoles
 const allMenuItems = [
-  { label: 'Accueil',       icon: 'pi pi-home',      route: { name: 'Home' } },
-  { label: 'Maps',          icon: 'pi pi-map',       route: { name: 'Maps' } },
-  { label: 'Test',          icon: 'pi pi-cog',       route: { name: 'test' } },
-  { label: 'Dashboard',     icon: 'pi pi-users',     route: { name: 'UserDashboard' }, allowedRoles: ['admin'] },
-  { label: 'Connexion',     icon: 'pi pi-sign-in',   route: { name: 'Login' },       allowedRoles: ['guest'] },
-  { label: 'Inscription',   icon: 'pi pi-user-plus', route: { name: 'Register' },    allowedRoles: ['guest'] },
-  // pas de allowedRoles ⇒ tout le monde y a accès
+  { label: 'Accueil',     icon: 'pi pi-home',      route: { name: 'Home' },           requiresAuth: true },
+  {
+    label: 'Dashboard',   icon: 'pi pi-users',     route: { name: 'UserDashboard' },  requiresAuth: true,
+    allowedRoles: ['admin']
+  },
+  // ces deux-là restent libre accès
+  { label: 'Connexion',   icon: 'pi pi-sign-in',   route: { name: 'Login' },          requiresAuth: false },
+  { label: 'Inscription', icon: 'pi pi-user-plus', route: { name: 'Register' },       requiresAuth: false },
 ]
 
-// 2) Récupération de l’état utilisateur
+// 2) On récupère l’état utilisateur
 const { user, isLoggedIn } = useUser()
 
-// 3) Filtrage réactif
+// 3) Filtrage : auth d’abord, puis rôle
 const filteredMenu = computed(() => {
   const role = isLoggedIn.value ? user.value.role : 'guest'
+
   return allMenuItems.filter(item => {
-    // si pas de clé allowedRoles OU tableau vide → accessible à tous
-    if (!item.allowedRoles || item.allowedRoles.length === 0) {
-      return true
+    // a) si la page demande auth et qu’on n’est pas connecté → hide
+    if (item.requiresAuth && !isLoggedIn.value) {
+      return false
     }
-    return item.allowedRoles.includes(role)
+    // b) si des rôles sont définis et que le user n’y est pas → hide
+    if (item.allowedRoles && !item.allowedRoles.includes(role)) {
+      return false
+    }
+    // sinon → show
+    return true
   })
 })
 </script>
@@ -79,18 +85,15 @@ const filteredMenu = computed(() => {
   left: 2rem;
   transition: transform 0.5s ease-out, opacity 0.5s ease-out;
   border-radius: 6px;
-  //padding: 0.5rem 1.5rem;
-  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02), 0px 0px 2px rgba(0, 0, 0, 0.05),
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02),
+  0px 0px 2px rgba(0, 0, 0, 0.05),
   0px 1px 4px rgba(0, 0, 0, 0.08);
-  .p-menu {
-    border: none !important;
-  }
+  .p-menu { border: none !important; }
 }
 .leave-active,
 .leave-out {
-  transform: translateX(-120%); /* Translate to the left */
-  opacity: 0; /* Fade out */
+  transform: translateX(-120%);
+  opacity: 0;
   transition: transform 0.5s ease-out, opacity 0.5s ease-out;
 }
 </style>
-
