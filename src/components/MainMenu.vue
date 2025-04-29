@@ -1,14 +1,15 @@
+<!-- src/components/Menu.vue -->
 <template>
   <section class="menu-container">
-    <Menu :model="filteredMenuItems" :style="{ border: 'none' }">
+    <Menu :model="primeMenuItems" :style="{ border: 'none' }">
       <template #item="{ item, props }">
         <router-link
-          v-if="item.route"
-          v-slot="{ href, navigate }"
-          :to="item.route"
-          custom
+            v-if="item.route"
+            v-slot="{ href, navigate }"
+            :to="item.route"
+            custom
         >
-          <a :href="href" v-bind="props.action" @click="navigate">
+          <a :href="href" v-bind="props.action" @click="navigate" class="flex items-center p-2 hover:bg-gray-100 rounded">
             <span :class="item.icon" />
             <span class="ml-2">{{ item.label }}</span>
           </a>
@@ -18,45 +19,43 @@
   </section>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from "vue";
+<script setup>
+import { computed } from 'vue'
+import Menu from 'primevue/menu'
+import {useUser} from "../composition/user/index.js";
 
-import Menu from "primevue/menu";
+// 1) Déclaration de tous les items avec, éventuellement, allowedRoles
+const allMenuItems = [
+  { label: 'Accueil',   icon: 'pi pi-home',    route: '/',         allowedRoles: [] },
+  { label: 'Profil',    icon: 'pi pi-user',    route: '/profile',  allowedRoles: ['user','admin'] },
+  { label: 'Admin',     icon: 'pi pi-shield',  route: '/admin',    allowedRoles: ['admin'] },
+  { label: 'Connexion', icon: 'pi pi-sign-in', route: '/login',    allowedRoles: ['guest'] },
+  { label: 'À propos',  icon: 'pi pi-info',    route: '/about' }  // pas de allowedRoles => tout le monde
+]
 
-const menuItems = ref([
-  {
-    label: "Accueil",
-    icon: "pi pi-home",
-    route: "/",
-  },
-  {
-    label: "Page de test",
-    icon: "pi pi-link",
-    route: "/test",
-  },
-  {
-    label: "Test de map",
-    icon: "pi pi-clipboard",
-    route: "/maps",
-  },
-  {
-    label: "Gestions des utilisateurs / permissions",
-    icon: "pi pi-key",
-    route: "/admin/users",
-    permission: ["Consultation des rôles", "Consultation des permissions"],
-  },
-]);
+// 2) Récupération de l’état utilisateur
+const { user, isLoggedIn } = useUser()
 
-// Computed pour filtrer les éléments du menu selon les permissions
-// const filteredMenuItems = computed(() => {
-// 	return menuItems.value.filter(item => {
-// 		if (!item.permission) return true;
-// 		return hasPermission(item.permission);
-// 	});
-// });
-const filteredMenuItems = computed(() => {
-  return menuItems.value;
-});
+// 3) Filtrage dynamique selon le rôle (par défaut 'guest' si non-connecté)
+const filteredMenu = computed(() => {
+  const role = isLoggedIn.value ? user.value.role : 'guest'
+  return allMenuItems.filter(item => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      return true
+    }
+    return item.allowedRoles.includes(role)
+  })
+})
+
+// 4) Adaptation au modèle attendu par PrimeVue (<Menu :model="...">)
+const primeMenuItems = computed(() =>
+    filteredMenu.value.map(item => ({
+      label: item.label,
+      icon:  item.icon,
+      command: () => {},    // on n'utilise pas command ici, on passe par router-link
+      route: item.route
+    }))
+)
 </script>
 
 <style scoped lang="scss">
@@ -74,7 +73,7 @@ const filteredMenuItems = computed(() => {
   border-radius: 6px;
   //padding: 0.5rem 1.5rem;
   box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02), 0px 0px 2px rgba(0, 0, 0, 0.05),
-    0px 1px 4px rgba(0, 0, 0, 0.08);
+  0px 1px 4px rgba(0, 0, 0, 0.08);
   .p-menu {
     border: none !important;
   }
@@ -86,3 +85,4 @@ const filteredMenuItems = computed(() => {
   transition: transform 0.5s ease-out, opacity 0.5s ease-out;
 }
 </style>
+

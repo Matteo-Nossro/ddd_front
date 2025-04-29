@@ -73,7 +73,7 @@
 		</Column>
 	</DataTable>
 
-  <TrackSuggestionPopup  v-if="props.suggestion"  :track="selectedTrack" v-model:visible="popupSuggestionVisible"/>
+  <TrackSuggestionPopup  v-if="props.suggestion" :last-date="formatToYMD(date)" :last-country="selectedCountry" :track="selectedTrack" v-model:visible="popupSuggestionVisible"/>
 	<TrackDetailsPopup v-else :track="selectedTrack" v-model:visible="popupDetailsVisible"/>
 
 </template>
@@ -101,7 +101,7 @@ const selectedTrack = ref<Track | null>(null);
 const popupSuggestionVisible = ref(false);
 const popupDetailsVisible = ref(false);
 
-const date = ref<string | null>(null);
+const date = ref<Date | null>(new Date('2025-04-05'))
 const selectedCountry = ref<string>('FR');
 const currentPage = ref<number>(1);
 const totalCount = ref<number>(0);
@@ -199,20 +199,10 @@ function handleOpenDetails(track: Track) {
 function handleOpenSuggestions(track: Track) {
   console.log('handleOpenSuggestions')
 	selectedTrack.value = track;
+  console.log('handleOpenSuggestions selectedTrack.value',selectedTrack.value)
   popupSuggestionVisible.value = true;
 }
 
-// onMounted(async () => {
-//   try {
-//     const response = await fetch('/moke_top_track.json');
-//     if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
-//
-//     const data = await response.json();
-//     tracks.value = data.results; // ✅ on accède à `results` ici
-//   } catch (error) {
-//     console.error('Erreur lors du chargement des tracks :', error);
-//   }
-// });
 onMounted(async () => {
   console.log(props.inputTracks)
   if (props.inputTracks?.length !== 0 && props.inputTracks !== undefined) return;

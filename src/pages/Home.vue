@@ -1,16 +1,40 @@
 <template>
-  <div class="app">
-    <h1>Dashboard</h1>
+  <MainMenu/>
+  <DefaultContainer v-if="user.role='citizen'" title="Liste des Tracks">
+    <TrackTable suggestion/>
+  </DefaultContainer>
+  <DefaultContainer v-else-if="user.role='scientist'" title="Liste des Tracks">
+    <TrackTable suggestion="false"/>
+  </DefaultContainer>
+  <div v-else >
+    <DefaultContainer title="Liste des Tracks Suggestion">
+      <TrackTable suggestion/>
+    </DefaultContainer>
+
+    <DefaultContainer title="Liste des Tracks analyse">
+      <TrackTable suggestion="false"/>
+    </DefaultContainer>
+
   </div>
+  {{user.role}}
+
+  <DefaultContainer v-if="user.role != 'citizen'" title="Liste des Pays">
+    <ChartTest/>
+  </DefaultContainer>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import Button from 'primevue/button'
 import {useUser} from "../composition/user/index.js";
 import Maps from "../components/Maps.vue";
+import ChartTest from "../components/ChartTest.vue";
+import MainMenu from "../components/MainMenu.vue";
+import TrackTable from "../composition/track/TrackTable.vue";
+import DefaultContainer from "../components/DefaultContainer.vue";
 
-const { user } = useUser()
+const { user, isLoggedIn } = useUser()
+
 
 
 const onClick = () => {
@@ -18,25 +42,8 @@ const onClick = () => {
   alert('Bouton cliqué !')
 }
 
-const chartOptions = ref({
-  title: {
-    text: 'Exemple de graphique'
-  },
-  tooltip: {},
-  legend: {
-    data: ['Ventes']
-  },
-  xAxis: {
-    data: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
-  },
-  yAxis: {},
-  series: [
-    {
-      name: 'Ventes',
-      type: 'bar',
-      data: [5, 20, 36, 10, 10]
-    }
-  ]
+onMounted(()=>{
+  console.log('user.value.role',user.value.role)
 })
 </script>
 

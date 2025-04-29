@@ -40,10 +40,12 @@ interface TrackResponse{
 
 }
 
+const url = 'http://127.0.0.1:8000/api/'
+
 // Fonction pour récupérer les tracks via l’API
 export async function fetchTracksByCountry(country: string, page = 1): Promise<TrackResponse> {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/musique/tracks/${country}/?page=${page}`);
+        const response = await fetch(url + `music/tracks/${country}/?page=${page}`);
         if (!response.ok) {
             throw new Error(`Erreur HTTP ! status : ${response.status}`);
         }
@@ -57,7 +59,21 @@ export async function fetchTracksByCountry(country: string, page = 1): Promise<T
 
 export async function fetchTopTracksByCountryAndDate(country: string, date : string): Promise<TrackResponse> {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/musique/tracks/top/${country}/${date}/`);
+        const response = await fetch(url + `music/tracks/top/${country}/${date}/`);
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ! status : ${response.status}`);
+        }
+        const data = await response.json();
+        return data as TrackResponse;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error);
+        throw error;
+    }
+}
+
+export async function fetchSmilarTracksFromDateAndCountry(country: string, date : string, spotify_id:string, newCountry : string, newDate : string ): Promise<TrackResponse> {
+    try {
+        const response = await fetch(url + `music/tracks/similar/${country}/${date}/${spotify_id}/${newCountry}/${newDate}/`);
         if (!response.ok) {
             throw new Error(`Erreur HTTP ! status : ${response.status}`);
         }
@@ -72,6 +88,7 @@ export async function fetchTopTracksByCountryAndDate(country: string, date : str
 export function useTrack() {
     return {
         fetchTracks: fetchTracksByCountry,
-        fetchTopTracksByCountryAndDate: fetchTopTracksByCountryAndDate
+        fetchTopTracksByCountryAndDate: fetchTopTracksByCountryAndDate,
+        fetchSmilarTracksFromDateAndCountry:fetchSmilarTracksFromDateAndCountry,
     }
 }
