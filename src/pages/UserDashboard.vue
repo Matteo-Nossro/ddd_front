@@ -1,6 +1,6 @@
 <template>
   <div class="admin-dashboard">
-    <h1>Dashboard Administration</h1>
+    <h1>Gestion des utilisateurs / permissions</h1>
 
     <!-- Carte des statistiques -->
     <div class="stats-container" v-if="stats">
