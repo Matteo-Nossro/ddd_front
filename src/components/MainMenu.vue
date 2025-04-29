@@ -45,9 +45,6 @@ const allMenuItems = [
     label: 'Dashboard',   icon: 'pi pi-users',     route: { name: 'UserDashboard' },  requiresAuth: true,
     allowedRoles: ['admin']
   },
-  // ces deux-là restent libre accès
-  { label: 'Connexion',   icon: 'pi pi-sign-in',   route: { name: 'Login' },          requiresAuth: false },
-  { label: 'Inscription', icon: 'pi pi-user-plus', route: { name: 'Register' },       requiresAuth: false },
 ]
 
 // 2) On récupère l’état utilisateur
